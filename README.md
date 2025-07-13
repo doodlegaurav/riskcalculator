@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Unified Risk & Capital Calculator</title>
+  <title>Risk & Capital Calculator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -53,7 +53,7 @@
       padding: 15px;
       border-radius: 6px;
       font-size: 14px;
-      line-height: 1.5;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -77,12 +77,18 @@
   <div class="result" id="result"></div>
 
   <script>
+    function formatIndian(num) {
+      return num.toLocaleString('en-IN', {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2
+      });
+    }
+
     function calculate() {
       const entry = parseFloat(document.getElementById("entry").value);
       const sl = parseFloat(document.getElementById("sl").value);
       const risk = parseFloat(document.getElementById("risk").value);
       const leverage = parseFloat(document.getElementById("leverage").value || 1);
-
       const stopSize = Math.abs(entry - sl);
 
       if (!entry || !sl || !risk || stopSize === 0 || leverage <= 0) {
@@ -91,18 +97,20 @@
       }
 
       const qty = Math.floor(risk / stopSize);
-      const target1 = entry > sl ? entry + stopSize * 1.5 : entry - stopSize * 1.5;
-      const target2 = entry > sl ? entry + stopSize * 3 : entry - stopSize * 3;
+      const target1 = entry > sl ? entry + stopSize * 1 : entry - stopSize * 1;
+      const target2 = entry > sl ? entry + stopSize * 2 : entry - stopSize * 2;
+      const target3 = entry > sl ? entry + stopSize * 3 : entry - stopSize * 3;
       const totalValue = entry * qty;
       const requiredCapital = totalValue / leverage;
 
       document.getElementById("result").innerHTML = `
-        🛑 <strong>Stop Size:</strong> ₹${stopSize.toFixed(2)}<br>
-        📦 <strong>Quantity:</strong> ${qty} shares<br>
-        🎯 <strong>1:1.5 Target:</strong> ₹${target1.toFixed(2)}<br>
-        🎯 <strong>1:3 Target:</strong> ₹${target2.toFixed(2)}<br>
-        💼 <strong>Total Trade Value:</strong> ₹${totalValue.toFixed(2)}<br>
-        🏦 <strong>Capital Required (Leverage ${leverage}x):</strong> ₹${requiredCapital.toFixed(2)}
+        🛑 <strong>Stop Size:</strong> ₹${formatIndian(stopSize)}<br>
+        📦 <strong>Quantity:</strong> ${qty} shares<br><br>
+        🎯 <strong>Target 1 (1:1):</strong> ₹${formatIndian(target1)}<br>
+        🎯 <strong>Target 2 (1:2):</strong> ₹${formatIndian(target2)}<br>
+        🎯 <strong>Target 3 (1:3):</strong> ₹${formatIndian(target3)}<br><br>
+        💼 <strong>Total Trade Value:</strong> ₹${formatIndian(totalValue)}<br>
+        🏦 <strong>Capital Required (Leverage ${leverage}x):</strong> ₹${formatIndian(requiredCapital)}
       `;
     }
   </script>
