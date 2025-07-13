@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Risk & Capital Calculator</title>
+  <title>Unified Risk & Capital Calculator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,10 +14,9 @@
     }
 
     h2 {
-      font-size: 18px;
+      font-size: 20px;
       text-align: center;
-      margin-top: 30px;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
 
     label {
@@ -49,25 +48,18 @@
     }
 
     .result {
-      margin-top: 15px;
+      margin-top: 20px;
       background: #2a2a2a;
       padding: 15px;
       border-radius: 6px;
       font-size: 14px;
       line-height: 1.5;
     }
-
-    hr {
-      border: none;
-      border-top: 1px solid #444;
-      margin: 30px 0;
-    }
   </style>
 </head>
 <body>
+  <h2>📊 Trade Risk & Capital Calculator</h2>
 
-  <!-- RISK CALCULATOR -->
-  <h2>📊 Risk per Trade Calculator</h2>
   <label for="entry">Entry Price</label>
   <input type="number" id="entry" placeholder="e.g. 152.40">
 
@@ -77,65 +69,40 @@
   <label for="risk">Risk per Trade (₹)</label>
   <input type="number" id="risk" value="1000">
 
-  <button onclick="calculateRisk()">Calculate</button>
+  <label for="leverage">Leverage (e.g. 1 for cash, 2 for 2x)</label>
+  <input type="number" id="leverage" value="1">
+
+  <button onclick="calculate()">Calculate</button>
 
   <div class="result" id="result"></div>
 
-  <hr>
-
-  <!-- CAPITAL CALCULATOR -->
-  <h2>💰 Capital Required Calculator</h2>
-  <label for="entry2">Entry Price</label>
-  <input type="number" id="entry2" placeholder="e.g. 200">
-
-  <label for="qty">Quantity</label>
-  <input type="number" id="qty" placeholder="e.g. 50">
-
-  <label for="leverage">Leverage (e.g. 2 for 2x, 5 for 5x)</label>
-  <input type="number" id="leverage" value="1" placeholder="e.g. 2 or 5">
-
-  <button onclick="calculateCapital()">Calculate</button>
-
-  <div class="result" id="result2"></div>
-
   <script>
-    function calculateRisk() {
+    function calculate() {
       const entry = parseFloat(document.getElementById("entry").value);
       const sl = parseFloat(document.getElementById("sl").value);
       const risk = parseFloat(document.getElementById("risk").value);
+      const leverage = parseFloat(document.getElementById("leverage").value || 1);
+
       const stopSize = Math.abs(entry - sl);
 
-      if (!entry || !sl || !risk || stopSize === 0) {
+      if (!entry || !sl || !risk || stopSize === 0 || leverage <= 0) {
         document.getElementById("result").innerHTML = "❌ Please enter valid values.";
         return;
       }
 
       const qty = Math.floor(risk / stopSize);
-      const target = entry > sl ? entry + stopSize * 2 : entry - stopSize * 2;
+      const target1 = entry > sl ? entry + stopSize * 1.5 : entry - stopSize * 1.5;
+      const target2 = entry > sl ? entry + stopSize * 3 : entry - stopSize * 3;
+      const totalValue = entry * qty;
+      const requiredCapital = totalValue / leverage;
 
       document.getElementById("result").innerHTML = `
         🛑 <strong>Stop Size:</strong> ₹${stopSize.toFixed(2)}<br>
         📦 <strong>Quantity:</strong> ${qty} shares<br>
-        🎯 <strong>1:2 Target Price:</strong> ₹${target.toFixed(2)}
-      `;
-    }
-
-    function calculateCapital() {
-      const entry = parseFloat(document.getElementById("entry2").value);
-      const qty = parseFloat(document.getElementById("qty").value);
-      const leverage = parseFloat(document.getElementById("leverage").value || 1);
-
-      if (!entry || !qty || leverage <= 0) {
-        document.getElementById("result2").innerHTML = "❌ Please enter valid values.";
-        return;
-      }
-
-      const totalValue = entry * qty;
-      const requiredCapital = totalValue / leverage;
-
-      document.getElementById("result2").innerHTML = `
+        🎯 <strong>1:1.5 Target:</strong> ₹${target1.toFixed(2)}<br>
+        🎯 <strong>1:3 Target:</strong> ₹${target2.toFixed(2)}<br>
         💼 <strong>Total Trade Value:</strong> ₹${totalValue.toFixed(2)}<br>
-        🏦 <strong>Capital Required (with ${leverage}x leverage):</strong> ₹${requiredCapital.toFixed(2)}
+        🏦 <strong>Capital Required (Leverage ${leverage}x):</strong> ₹${requiredCapital.toFixed(2)}
       `;
     }
   </script>
